@@ -19,20 +19,11 @@
 			1, 1,
 			1, -1
 		]);
-		
+
 		return verts;
 	}
 
-	function setupGL(){
-		ctx.viewport(0, 0, ctx.drawingBufferWidth, ctx.drawingBufferHeight)
-		ctx.clearColor(1.0, 0.3, 0.3, 1.0);
-		ctx.clear(ctx.COLOR_BUFFER_BIT);
-
-		
-
-				/* gl_FragColor = vec4(texCoords, 1.0, 1.0); */
-				/* gl_FragColor = texture2D(textureSampler, texCoords); */
-
+	function setupShaders(){
 		const vertShaderObj = ctx.createShader(ctx.VERTEX_SHADER)
 		const fragShaderObj = ctx.createShader(ctx.FRAGMENT_SHADER)
 
@@ -49,7 +40,32 @@
 		ctx.linkProgram(program);
 		ctx.useProgram(program);
 
+		return program;
+	}
+
+	function setupTexture(){
+		const texture = ctx.createTexture();
+		ctx.activeTexture(ctx.TEXTURE0);
+		ctx.bindTexture(ctx.TEXTURE_2D, texture);
+		ctx.texImage2D(ctx.TEXTURE_2D, 0, ctx.RGBA, ctx.RGBA, ctx.UNSIGNED_BYTE, video);
+
+		ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_WRAP_S, ctx.CLAMP_TO_EDGE);
+		ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_WRAP_T, ctx.CLAMP_TO_EDGE);
+		ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MIN_FILTER, ctx.LINEAR);
+	}
+
+	function clear(){
+		ctx.clearColor(1.0, 0.3, 0.3, 1.0);
+		ctx.clear(ctx.COLOR_BUFFER_BIT);
+	}
+
+	function setupGL(){
+		ctx.viewport(0, 0, ctx.drawingBufferWidth, ctx.drawingBufferHeight);
+		
+		clear();
+
 		const vertices = drawVerts();
+		const program = setupShaders();
 
 		const vertBuffer = ctx.createBuffer();
 		ctx.bindBuffer(ctx.ARRAY_BUFFER, vertBuffer);
@@ -59,14 +75,7 @@
 		ctx.vertexAttribPointer(positionLocation, 2, ctx.FLOAT, false, 0, 0)
 		ctx.enableVertexAttribArray(positionLocation);
 
-		const texture = ctx.createTexture();
-		ctx.activeTexture(ctx.TEXTURE0);
-		ctx.bindTexture(ctx.TEXTURE_2D, texture);
-		ctx.texImage2D(ctx.TEXTURE_2D, 0, ctx.RGBA, ctx.RGBA, ctx.UNSIGNED_BYTE, video);
-
-		ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_WRAP_S, ctx.CLAMP_TO_EDGE);
-		ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_WRAP_T, ctx.CLAMP_TO_EDGE);
-		ctx.texParameteri(ctx.TEXTURE_2D, ctx.TEXTURE_MIN_FILTER, ctx.LINEAR);
+		setupTexture();
 
 		ctx.drawArrays(ctx.TRIANGLES, 0, 6);
 
@@ -76,7 +85,7 @@
 	}
 
 	const draw = ()=>{
-		setupGL();
+		// setupGL();
 		/* console.log('drawing'); */
 		/* ctx.texImage2D(ctx.TEXTURE_2D, 0, ctx.RGBA, ctx.RGBA, ctx.UNSIGNED_BYTE, video); */
 		requestAnimationFrame(draw);
@@ -85,8 +94,6 @@
 	onMount(()=>{
 		/* can.width = window.innerWidth; */
 		/* can.height = window.innerHeight; */
-		console.log(can);
-		console.log(navigator.mediaDevices)
 
 		ctx = can.getContext('webgl2');
 		video.addEventListener("playing", ()=>{
