@@ -6,41 +6,29 @@
 	let can: HTMLCanvasElement;
 	let ctx: WebGL2RenderingContext;
 
+	import vertShader from './shaders/vertex.glsl';
+	import fragShader from './shaders/fragment.glsl';
+
+	function drawVerts(){
+		let verts = new Float32Array([
+			-1, -1,
+			-1, 1,
+			1, 1,
+
+			-1, -1,
+			1, 1,
+			1, -1
+		]);
+		
+		return verts;
+	}
+
 	function setupGL(){
 		ctx.viewport(0, 0, ctx.drawingBufferWidth, ctx.drawingBufferHeight)
 		ctx.clearColor(1.0, 0.3, 0.3, 1.0);
 		ctx.clear(ctx.COLOR_BUFFER_BIT);
 
-		const vertShader = `
-			attribute vec2 position;
-
-			varying vec2 texCoords;
-
-			void main(){
-				texCoords = (position + 1.0) / 2.0;
-				texCoords.y = 1.0 - texCoords.y;
-				gl_Position = vec4(position, 0, 1.0);
-			}
-
-		`;
-
-		const fragShader = `
-			precision highp float;
-
-			varying vec2 texCoords;
-
-			uniform sampler2D textureSampler;
-			
-			void main(){
-				float alpha = 0.2;
-
-				vec4 color = texture2D(textureSampler, texCoords);
-
-				color.a += alpha;
-
-				gl_FragColor = color;
-			}
-		`;
+		
 
 				/* gl_FragColor = vec4(texCoords, 1.0, 1.0); */
 				/* gl_FragColor = texture2D(textureSampler, texCoords); */
@@ -61,15 +49,7 @@
 		ctx.linkProgram(program);
 		ctx.useProgram(program);
 
-		const vertices = new Float32Array([
-			-1, -1,
-			-1, 1,
-			1, 1,
-
-			-1, -1,
-			1, 1,
-			1, -1
-		]);
+		const vertices = drawVerts();
 
 		const vertBuffer = ctx.createBuffer();
 		ctx.bindBuffer(ctx.ARRAY_BUFFER, vertBuffer);
@@ -106,6 +86,7 @@
 		/* can.width = window.innerWidth; */
 		/* can.height = window.innerHeight; */
 		console.log(can);
+		console.log(navigator.mediaDevices)
 
 		ctx = can.getContext('webgl2');
 		video.addEventListener("playing", ()=>{
